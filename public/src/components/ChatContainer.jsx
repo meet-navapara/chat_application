@@ -191,7 +191,7 @@ const Container = styled.div`
       font-size: 1.8rem;
       cursor: pointer;
       padding: 0.5rem;
-      margin-right: 0.5rem;
+      margin-right: 0rem;
       transition: color 0.3s ease;
       touch-action: manipulation;
       
