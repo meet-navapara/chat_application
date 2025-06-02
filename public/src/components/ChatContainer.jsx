@@ -117,11 +117,18 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
       </div>
       
       <div className="chat-messages">
-        {messages.map((message, index) => (
-          <MessageItem key={`msg-${index}`} message={message} />
-        ))}
+        {false ? (
+          <div className="loading-messages">Loading messages...</div>
+        ) : messages.length > 0 ? (
+          messages.map((message, index) => (
+            <MessageItem key={`msg-${index}`} message={message} />
+          ))
+        ) : (
+          <div className="no-messages">No messages yet</div>
+        )}
         <div ref={messagesEndRef} />
       </div>
+      
       
       <ChatInputWrapper>
         <ChatInput handleSendMsg={handleSendMsg} />
@@ -156,7 +163,7 @@ const Container = styled.div`
     padding: 0.8rem 1rem;
     background-color: #1e1e2f;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    position: sticky;
+    position: relative;
     top: 0;
     z-index: 100;
     min-height: 60px;
@@ -238,7 +245,12 @@ const Container = styled.div`
     overscroll-behavior: contain;
     scroll-behavior: smooth;
     padding-bottom: env(safe-area-inset-bottom);
-
+    .loading-messages,
+    .no-messages {
+      color: #aaa;
+      text-align: center;
+      margin-top: 2rem;
+    }
     &::-webkit-scrollbar {
       width: 0.3rem;
 
