@@ -258,7 +258,7 @@ const Container = styled.div`
     &::-webkit-scrollbar {
       width: 0.7rem;
       &-thumb {
-        background-color: #4e0eff;
+        background-color: transparent;
         border-radius: 1rem;
       }
     }
@@ -375,3 +375,4 @@ const ChatInputWrapper = styled.div`
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 `;
+
