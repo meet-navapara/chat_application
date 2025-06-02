@@ -240,6 +240,7 @@ const Container = styled.div`
   .chat-messages {
     flex: 1;
     padding: 1rem;
+    padding-top: 6rem; /* Add this line */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -326,6 +327,8 @@ const Container = styled.div`
     .chat-messages {
       padding: 0.8rem;
       gap: 0.8rem;
+      margin-bottom:0.1rem;
+
 
       .message .content {
         max-width: 85%;
