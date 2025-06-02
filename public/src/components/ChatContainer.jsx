@@ -73,10 +73,10 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
   }, [arrivalMessage]);
 
-    // Auto-scroll to bottom
-    useEffect(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Memoized message item component
   const MessageItem = React.memo(({ message }) => (
@@ -117,15 +117,9 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
       </div>
       
       <div className="chat-messages">
-        {false ? (
-          <div className="loading-messages">Loading messages...</div>
-        ) : messages.length > 0 ? (
-          messages.map((message, index) => (
-            <MessageItem key={`msg-${index}`} message={message} />
-          ))
-        ) : (
-          <div className="no-messages">No messages yet</div>
-        )}
+        {messages.map((message, index) => (
+          <MessageItem key={`msg-${index}`} message={message} />
+        ))}
         <div ref={messagesEndRef} />
       </div>
       
@@ -137,20 +131,19 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
 }
 
 const Container = styled.div`
-display: grid;
-grid-template-rows: auto 1fr auto;
-height: 100vh;
-height: -webkit-fill-available;
-min-height: -webkit-fill-available;
-width: 100%;
-overflow: hidden;
-
-top: 0;
-
-background-color: #131324;
-padding-bottom: ${props => props.keyboardHeight}px;
-transition: padding-bottom 0.3s ease;
-
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  height: -webkit-fill-available;
+  min-height: -webkit-fill-available;
+  width: 100vw;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #131324;
+  padding-bottom: ${props => props.keyboardHeight}px;
+  transition: padding-bottom 0.3s ease;
 
   @supports (-webkit-touch-callout: none) {
     height: -webkit-fill-available;
@@ -245,12 +238,7 @@ transition: padding-bottom 0.3s ease;
     overscroll-behavior: contain;
     scroll-behavior: smooth;
     padding-bottom: env(safe-area-inset-bottom);
-    .loading-messages,
-    .no-messages {
-      color: #aaa;
-      text-align: center;
-      margin-top: 2rem;
-    }
+
     &::-webkit-scrollbar {
       width: 0.3rem;
 
