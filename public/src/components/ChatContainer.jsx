@@ -163,7 +163,7 @@ const Container = styled.div`
     padding: 0.8rem 1rem;
     background-color: #1e1e2f;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    position: relative;
+    
     top: 0;
     z-index: 100;
     min-height: 60px;
@@ -299,6 +299,7 @@ const Container = styled.div`
   }
 
   @media screen and (max-width: 768px) {
+    position: fixed;
     .chat-header {
       padding: 0.8rem 0.8rem;
       min-height: 55px;
@@ -334,6 +335,7 @@ const Container = styled.div`
   }
 
   @media screen and (max-width: 480px) {
+    position: fixed;
     .chat-header {
       padding: 0.7rem 0.6rem;
       min-height: 50px;
