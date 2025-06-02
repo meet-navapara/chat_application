@@ -12,6 +12,16 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
   const scrollRef = useRef();
   const messagesEndRef = useRef();
   const [arrivalMessage, setArrivalMessage] = useState(null);
+  const [chatHeight, setChatHeight] = useState(window.innerHeight);
+
+useEffect(() => {
+  const resizeChat = () => {
+    setChatHeight(window.innerHeight);
+  };
+
+  window.addEventListener("resize", resizeChat);
+  return () => window.removeEventListener("resize", resizeChat);
+}, []);
 
   // Handle keyboard on mobile devices
   useEffect(() => {
@@ -232,6 +242,9 @@ const Container = styled.div`
   }
 
   .chat-messages {
+    flex: 1;
+    max-height: calc(100vh - 60px - 70px); // Header + input height
+    height: calc(100% - 60px - 70px); // fallback
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -240,7 +253,7 @@ const Container = styled.div`
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scroll-behavior: smooth;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(${props => props.keyboardHeight}px + env(safe-area-inset-bottom));
     .loading-messages,
     .no-messages {
       color: #aaa;
@@ -295,8 +308,6 @@ const Container = styled.div`
   }
 
   @media screen and (max-width: 768px) {
-  position: fixed;
-  overflow: hidden;
   top: 0;
   left: 0;
     .chat-header {
