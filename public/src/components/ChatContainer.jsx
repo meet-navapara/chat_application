@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import styled from "styled-components";
 import ChatInput from "./ChatInput";
 import Logout from "./Logout";
+import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
 
 export default function ChatContainer({ currentChat, socket, onBack }) {
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = useRef();
   const messagesEndRef = useRef();
   const [arrivalMessage, setArrivalMessage] = useState(null);
 
@@ -26,53 +27,36 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
 
   // Fetch messages
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        if (!currentChat) return;
-        
-        const data = await JSON.parse(
-          localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-        );
-        
-        const response = await axios.post(recieveMessageRoute, {
-          from: data._id,
-          to: currentChat._id,
-        });
-        
-        setMessages(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchMessages();
+    (async () => {
+      if (!currentChat) return;
+      const data = await JSON.parse(
+        localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+      );
+      const response = await axios.post(recieveMessageRoute, {
+        from: data._id,
+        to: currentChat._id,
+      });
+      setMessages(response.data);
+    })();
   }, [currentChat]);
 
   // Handle sending messages
   const handleSendMsg = useCallback(async (msg) => {
-    try {
-      const data = await JSON.parse(
-        localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-      );
-      
-      socket.current.emit("send-msg", {
-        to: currentChat._id,
-        from: data._id,
-        msg,
-      });
-      
-      await axios.post(sendMessageRoute, {
-        from: data._id,
-        to: currentChat._id,
-        message: msg,
-      });
+    const data = await JSON.parse(
+      localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+    );
+    socket.current.emit("send-msg", {
+      to: currentChat._id,
+      from: data._id,
+      msg,
+    });
+    await axios.post(sendMessageRoute, {
+      from: data._id,
+      to: currentChat._id,
+      message: msg,
+    });
 
-      setMessages((prev) => [...prev, { fromSelf: true, message: msg }]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
+    setMessages((prev) => [...prev, { fromSelf: true, message: msg }]);
   }, [currentChat, socket]);
 
   // Socket message receive
@@ -89,16 +73,14 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
   }, [arrivalMessage]);
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
-  // Message item component
+  // Memoized message item component
   const MessageItem = React.memo(({ message }) => (
-    <div className={`message ${message.fromSelf ? "sended" : "recieved"}`}>
-      <div className="content">
-        <p>{message.message}</p>
+    <div ref={scrollRef} key={uuidv4()}>
+      <div className={`message ${message.fromSelf ? "sended" : "recieved"}`}>
+        <div className="content">
+          <p>{message.message}</p>
+        </div>
       </div>
     </div>
   ));
@@ -115,13 +97,13 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
           <div className="user-details">
             <div className="avatar">
               <img
-                src={`data:image/svg+xml;base64,${currentChat?.avatarImage}`}
+                src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
                 alt="avatar"
                 loading="lazy"
               />
             </div>
             <div className="username">
-              <h3>{currentChat?.username}</h3>
+              <h3>{currentChat.username}</h3>
             </div>
           </div>
         </div>
@@ -131,15 +113,9 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
       </div>
       
       <div className="chat-messages">
-        {loading ? (
-          <div className="loading-messages">Loading messages...</div>
-        ) : messages.length > 0 ? (
-          messages.map((message, index) => (
-            <MessageItem key={`msg-${index}`} message={message} />
-          ))
-        ) : (
-          <div className="no-messages">No messages yet</div>
-        )}
+        {messages.map((message, index) => (
+          <MessageItem key={`msg-${index}`} message={message} />
+        ))}
         <div ref={messagesEndRef} />
       </div>
       
@@ -151,13 +127,17 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
 }
 
 const Container = styled.div`
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  height: 100vh;
-  width: 100%;
-  background-color: #131324;
-  padding-bottom: ${props => props.keyboardHeight}px;
-  transition: padding-bottom 0.3s ease;
+display: grid;
+grid-template-rows: auto 1fr auto;
+height: 100vh;
+width: 100%;
+background-color: #131324;
+padding-bottom: ${props => props.keyboardHeight}px;
+transition: padding-bottom 0.3s ease;
+
+  @supports (-webkit-touch-callout: none) {
+    height: -webkit-fill-available;
+  }
 
   .chat-header {
     display: grid;
@@ -201,8 +181,9 @@ const Container = styled.div`
       font-size: 1.8rem;
       cursor: pointer;
       padding: 0.5rem;
-      margin-right: 0rem;
+      margin-right: 0.5rem;
       transition: color 0.3s ease;
+      touch-action: manipulation;
       
       &:hover, &:active {
         color: #4f04ff;
@@ -238,33 +219,24 @@ const Container = styled.div`
   }
 
   .chat-messages {
-    flex: 1;
     padding: 1rem;
-    padding-top: 6rem; /* Add this line */
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scroll-behavior: smooth;
-
-    .loading-messages,
-    .no-messages {
-      color: #aaa;
-      text-align: center;
-      margin-top: 2rem;
-    }
+    padding-bottom: env(safe-area-inset-bottom);
 
     &::-webkit-scrollbar {
-      width: 0.7rem;
+      width: 0.3rem;
+
       &-thumb {
-        background-color: transparent;
+        background-color: #4e0eff;
         border-radius: 1rem;
       }
     }
-
-    scrollbar-width: thin;
-    scrollbar-color: #757575;
 
     .message {
       display: flex;
@@ -282,11 +254,13 @@ const Container = styled.div`
         color: #d1d1d1;
         overflow-wrap: break-word;
         line-height: 1.4;
+        user-select: text;
       }
     }
 
     .sended {
       justify-content: flex-end;
+
       .content {
         background-color: #4f04ff;
         color: white;
@@ -295,6 +269,7 @@ const Container = styled.div`
 
     .recieved {
       justify-content: flex-start;
+
       .content {
         background-color: #9900ff20;
       }
@@ -327,8 +302,6 @@ const Container = styled.div`
     .chat-messages {
       padding: 0.8rem;
       gap: 0.8rem;
-      margin-bottom:0.1rem;
-
 
       .message .content {
         max-width: 85%;
@@ -340,7 +313,7 @@ const Container = styled.div`
 
   @media screen and (max-width: 480px) {
     .chat-header {
-      padding: 0.6rem 0.6rem;
+      padding: 0.7rem 0.6rem;
       min-height: 50px;
 
       .user-details {
@@ -375,4 +348,3 @@ const ChatInputWrapper = styled.div`
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 `;
-
