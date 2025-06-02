@@ -46,26 +46,28 @@ export default function Contacts({ contacts, changeChat, isMobile }) {
             )}
           </div>
           
-          <div className="contacts">
-            {contacts.map((contact, index) => (
-              <div
-                key={contact._id}
-                className={`contact ${
-                  index === currentSelected ? "selected" : ""
-                }`}
-                onClick={() => changeCurrentChat(index, contact)}
-              >
-                <div className="avatar">
-                  <img
-                    src={`data:image/svg+xml;base64,${contact.avatarImage}`}
-                    alt={`${contact.username}'s avatar`}
-                  />
+          <div className="contacts-container">
+            <div className="contacts">
+              {contacts.map((contact, index) => (
+                <div
+                  key={contact._id}
+                  className={`contact ${
+                    index === currentSelected ? "selected" : ""
+                  }`}
+                  onClick={() => changeCurrentChat(index, contact)}
+                >
+                  <div className="avatar">
+                    <img
+                      src={`data:image/svg+xml;base64,${contact.avatarImage}`}
+                      alt={`${contact.username}'s avatar`}
+                    />
+                  </div>
+                  <div className="username">
+                    <h3>{contact.username}</h3>
+                  </div>
                 </div>
-                <div className="username">
-                  <h3>{contact.username}</h3>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           
           {!isMobile && (
@@ -89,11 +91,13 @@ export default function Contacts({ contacts, changeChat, isMobile }) {
 
 const Container = styled.div`
   display: grid;
-  grid-template-rows: ${props => props.isMobile ? '15% 85%' : '10% 75% 15%'};
+  grid-template-rows: ${props => props.isMobile ? '12% 88%' : '10% 75% 15%'};
   overflow: hidden;
   background-color: #080420;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: -webkit-fill-available;
+  position: relative;
 
   .header {
     display: flex;
@@ -101,6 +105,10 @@ const Container = styled.div`
     align-items: center;
     padding: 0 1rem;
     background-color: #0d0d30;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    min-height: 60px;
   }
 
   .brand {
@@ -130,23 +138,42 @@ const Container = styled.div`
     }
   }
 
+  .contacts-container {
+    overflow: hidden;
+    position: relative;
+  }
+
   .contacts {
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: auto;
+    overflow-y: auto;
+    height: 100%;
     gap: 0.8rem;
-    padding: ${props => props.isMobile ? '0.5rem 0' : '0'};
+    padding: ${props => props.isMobile ? '0.5rem 0.3rem 1rem' : '1rem 0'};
+    -webkit-overflow-scrolling: touch;
     
     &::-webkit-scrollbar {
-      width: 0.2rem;
-      
-      &-thumb {
-        background-color: #ffffff39;
-        width: 0.1rem;
-        border-radius: 1rem;
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #2d2d3d;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 3px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #777;
       }
     }
+    
+    scrollbar-width: thin;
+    scrollbar-color: #555 #2d2d3d;
     
     .contact {
       background-color: #ffffff34;
@@ -159,15 +186,23 @@ const Container = styled.div`
       gap: 1rem;
       align-items: center;
       transition: all 0.3s ease;
+      flex-shrink: 0;
       
       &:hover {
         background-color: #ffffff4d;
       }
       
+      &:active {
+        transform: scale(0.98);
+      }
+      
       .avatar {
         img {
           height: ${props => props.isMobile ? '2.5rem' : '3rem'};
+          width: ${props => props.isMobile ? '2.5rem' : '3rem'};
           border-radius: 50%;
+          object-fit: cover;
+          border: 1px solid #9a86f3;
         }
       }
       
@@ -198,12 +233,15 @@ const Container = styled.div`
     justify-content: center;
     align-items: center;
     gap: 2rem;
+    padding: 0.5rem;
     
     .avatar {
       img {
-        height: 4rem;
-        max-inline-size: 100%;
+        height: 3.5rem;
+        width: 3.5rem;
         border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #9a86f3;
       }
     }
     
@@ -215,12 +253,18 @@ const Container = styled.div`
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 180px;
       }
     }
   }
 
   @media (max-width: 480px) {
     grid-template-rows: 12% 88%;
+    
+    .header {
+      padding: 0 0.8rem;
+      min-height: 50px;
+    }
     
     .brand {
       img {
@@ -237,12 +281,18 @@ const Container = styled.div`
     }
     
     .contacts {
+      padding: 0.3rem 0.2rem 1rem;
+      gap: 0.6rem;
+      
       .contact {
         min-height: 3.5rem;
         width: 97%;
+        padding: 0.3rem;
+        gap: 0.8rem;
         
         .avatar img {
           height: 2.2rem;
+          width: 2.2rem;
         }
         
         .username h3 {
@@ -252,4 +302,4 @@ const Container = styled.div`
       }
     }
   }
-`;  
+`;
