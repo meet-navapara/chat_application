@@ -95,24 +95,20 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     </Container>
   );
 }
-
 const Container = styled.div`
   display: grid;
-  grid-template-rows: 10% 80% 10%;
+  grid-template-rows: auto 1fr auto; /* works better on all screens */
+  height: 100vh;
   gap: 0.1rem;
   overflow: hidden;
-
-  @media screen and (min-width: 720px) and (max-width: 1080px) {
-    grid-template-rows: 15% 70% 15%;
-  }
 
   .chat-header {
     display: flex;
     align-items: center;
     padding: 0 1rem;
-    height: 60px;
     gap: 1rem;
     justify-content: space-between;
+    background-color: #1e1e2f; /* optional for better contrast */
 
     .back-button {
       display: none;
@@ -121,10 +117,7 @@ const Container = styled.div`
       color: white;
       font-size: 2rem;
       cursor: pointer;
-      padding: 0;
-      user-select: none;
       flex-shrink: 0;
-      transition: color 0.3s ease;
 
       &:hover {
         color: #4f04ff;
@@ -137,7 +130,7 @@ const Container = styled.div`
       gap: 1rem;
       flex-grow: 1;
       justify-content: center;
-      min-width: 0;
+      overflow: hidden;
 
       .avatar img {
         height: 3rem;
@@ -147,11 +140,10 @@ const Container = styled.div`
       .username h3 {
         color: white;
         margin: 0;
+        font-size: 1.2rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-weight: 600;
-        font-size: 1.25rem;
       }
     }
 
@@ -161,41 +153,37 @@ const Container = styled.div`
   }
 
   .chat-messages {
-    padding: 1rem 2rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow: auto;
+    overflow-y: auto;
 
     &::-webkit-scrollbar {
       width: 0.2rem;
+
       &-thumb {
         background-color: #ffffff39;
-        width: 0.1rem;
         border-radius: 1rem;
       }
     }
 
     .message {
       display: flex;
-      align-items: center;
 
       .content {
-        max-width: 40%;
-        overflow-wrap: break-word;
+        max-width: 70%;
         padding: 1rem;
-        font-size: 1.1rem;
+        font-size: 1rem;
         border-radius: 1rem;
         color: #d1d1d1;
-
-        @media screen and (min-width: 720px) and (max-width: 1080px) {
-          max-width: 70%;
-        }
+        overflow-wrap: break-word;
       }
     }
 
     .sended {
       justify-content: flex-end;
+
       .content {
         background-color: #4f04ff21;
       }
@@ -203,34 +191,26 @@ const Container = styled.div`
 
     .recieved {
       justify-content: flex-start;
+
       .content {
         background-color: #9900ff20;
       }
     }
   }
 
-  /* Mobile view adjustments */
   @media screen and (max-width: 768px) {
-    grid-template-rows: auto 1fr auto;
-
     .chat-header {
-      margin-top: 1rem;
-      justify-content: space-between;
+      margin-top: 1.5rem;
 
       .back-button {
         display: inline-block;
       }
-
-      .user-details {
-        flex-grow: 1;
-        justify-content: center;
-      }
     }
 
-    /* Apply margin to ChatInput wrapper (last row of the grid) */
     > :last-child {
       margin-bottom: 1rem;
     }
   }
 `;
+
 
