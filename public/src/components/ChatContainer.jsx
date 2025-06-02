@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styled from "styled-components";
 import ChatInput from "./ChatInput";
 import Logout from "./Logout";
@@ -8,9 +8,24 @@ import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
 
 export default function ChatContainer({ currentChat, socket, onBack }) {
   const [messages, setMessages] = useState([]);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollRef = useRef();
+  const messagesEndRef = useRef();
   const [arrivalMessage, setArrivalMessage] = useState(null);
 
+  // Handle keyboard on mobile devices
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        setKeyboardHeight(window.innerHeight - window.visualViewport.height);
+      }
+    };
+
+    window.visualViewport?.addEventListener('resize', handleResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fetch messages
   useEffect(() => {
     (async () => {
       if (!currentChat) return;
@@ -25,7 +40,8 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     })();
   }, [currentChat]);
 
-  const handleSendMsg = async (msg) => {
+  // Handle sending messages
+  const handleSendMsg = useCallback(async (msg) => {
     const data = await JSON.parse(
       localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
     );
@@ -41,8 +57,9 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     });
 
     setMessages((prev) => [...prev, { fromSelf: true, message: msg }]);
-  };
+  }, [currentChat, socket]);
 
+  // Socket message receive
   useEffect(() => {
     if (socket.current) {
       socket.current.on("msg-recieve", (msg) => {
@@ -51,18 +68,29 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     }
   }, [socket]);
 
+  // Add arrival messages
   useEffect(() => {
-    if (arrivalMessage) {
-      setMessages((prev) => [...prev, arrivalMessage]);
-    }
+    arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
   }, [arrivalMessage]);
 
+  // Auto-scroll to bottom
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Memoized message item component
+  const MessageItem = React.memo(({ message }) => (
+    <div ref={scrollRef} key={uuidv4()}>
+      <div className={`message ${message.fromSelf ? "sended" : "recieved"}`}>
+        <div className="content">
+          <p>{message.message}</p>
+        </div>
+      </div>
+    </div>
+  ));
+
   return (
-    <Container>
+    <Container keyboardHeight={keyboardHeight}>
       <div className="chat-header">
         <div className="header-left">
           <button className="back-button" onClick={onBack} aria-label="Back">
@@ -75,6 +103,7 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
               <img
                 src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
                 alt="avatar"
+                loading="lazy"
               />
             </div>
             <div className="username">
@@ -86,18 +115,17 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
           <Logout />
         </div>
       </div>
+      
       <div className="chat-messages">
-        {messages.map((message) => (
-          <div ref={scrollRef} key={uuidv4()}>
-            <div className={`message ${message.fromSelf ? "sended" : "recieved"}`}>
-              <div className="content">
-                <p>{message.message}</p>
-              </div>
-            </div>
-          </div>
+        {messages.map((message, index) => (
+          <MessageItem key={`msg-${index}`} message={message} />
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      <ChatInput handleSendMsg={handleSendMsg} />
+      
+      <ChatInputWrapper>
+        <ChatInput handleSendMsg={handleSendMsg} />
+      </ChatInputWrapper>
     </Container>
   );
 }
@@ -106,20 +134,32 @@ const Container = styled.div`
   display: grid;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
-  gap: 0.1rem;
+  height: -webkit-fill-available;
+  min-height: -webkit-fill-available;
+  width: 100vw;
   overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
   background-color: #131324;
+  padding-bottom: ${props => props.keyboardHeight}px;
+  transition: padding-bottom 0.3s ease;
+
+  @supports (-webkit-touch-callout: none) {
+    height: -webkit-fill-available;
+  }
 
   .chat-header {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    padding: 0.8rem 1.5rem;
+    padding: 0.8rem 1rem;
     background-color: #1e1e2f;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
+    min-height: 60px;
 
     .header-left, .header-center, .header-right {
       display: flex;
@@ -153,9 +193,11 @@ const Container = styled.div`
       padding: 0.5rem;
       margin-right: 0.5rem;
       transition: color 0.3s ease;
+      touch-action: manipulation;
       
-      &:hover {
+      &:hover, &:active {
         color: #4f04ff;
+        transform: scale(0.95);
       }
     }
 
@@ -167,8 +209,8 @@ const Container = styled.div`
       overflow: hidden;
 
       .avatar img {
-        height: 3rem;
-        width: 3rem;
+        height: 2.8rem;
+        width: 2.8rem;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid #4e0eff;
@@ -177,7 +219,7 @@ const Container = styled.div`
       .username h3 {
         color: white;
         margin: 0;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
@@ -187,33 +229,66 @@ const Container = styled.div`
   }
 
   .chat-messages {
-    padding: 1rem 2rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     scroll-behavior: smooth;
+    padding-bottom: env(safe-area-inset-bottom);
 
     &::-webkit-scrollbar {
-      width: 0.4rem;
+      width: 0.7rem;
 
       &-thumb {
         background-color: #4e0eff;
         border-radius: 1rem;
       }
     }
+    &::-webkit-scrollbar {
+      width: 20px;
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #2d2d3d;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 3px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #777;
+      }
+    }
+
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #555 #2d2d3d;
+  }
 
     .message {
       display: flex;
+      transition: transform 0.2s ease;
+
+      &:active {
+        transform: scale(0.98);
+      }
 
       .content {
-        max-width: 70%;
-        padding: 1rem;
-        font-size: 1rem;
+        max-width: 80%;
+        padding: 0.8rem 1rem;
+        font-size: 0.95rem;
         border-radius: 1rem;
         color: #d1d1d1;
         overflow-wrap: break-word;
         line-height: 1.4;
+        user-select: text;
       }
     }
 
@@ -237,7 +312,8 @@ const Container = styled.div`
 
   @media screen and (max-width: 768px) {
     .chat-header {
-      padding: 0.8rem 1rem;
+      padding: 0.8rem 0.8rem;
+      min-height: 55px;
 
       .back-button {
         display: block;
@@ -247,27 +323,8 @@ const Container = styled.div`
         gap: 0.8rem;
         
         .avatar img {
-          height: 2.5rem;
-          width: 2.5rem;
-        }
-        
-        .username h3 {
-          font-size: 1.1rem;
-        }
-      }
-    }
-
-    .chat-messages {
-      padding: 1rem;
-    }
-  }
-
-  @media screen and (max-width: 480px) {
-    .chat-header {
-      .user-details {
-        .avatar img {
-          height: 2.2rem;
-          width: 2.2rem;
+          height: 2.4rem;
+          width: 2.4rem;
         }
         
         .username h3 {
@@ -275,5 +332,53 @@ const Container = styled.div`
         }
       }
     }
+
+    .chat-messages {
+      padding: 0.8rem;
+      gap: 0.8rem;
+
+      .message .content {
+        max-width: 85%;
+        padding: 0.7rem 0.9rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .chat-header {
+      padding: 0.7rem 0.6rem;
+      min-height: 50px;
+
+      .user-details {
+        .avatar img {
+          height: 2.2rem;
+          width: 2.2rem;
+        }
+        
+        .username h3 {
+          font-size: 0.95rem;
+        }
+      }
+    }
+
+    .chat-messages {
+      padding: 0.6rem;
+    }
+  }
+`;
+
+const ChatInputWrapper = styled.div`
+  padding: 0.5rem 1rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  background: #1e1e2f;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  transition: padding-bottom 0.3s ease;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 `;
