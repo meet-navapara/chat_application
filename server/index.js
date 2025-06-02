@@ -13,7 +13,7 @@ app.use(express.json());
 const path = require('path');
 const __dirname1 = path.resolve();
 
-// Serve static files from React build
+// Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname1, "build")));
   
@@ -21,7 +21,6 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname1, "build", "index.html"));
   });
 }
-
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
