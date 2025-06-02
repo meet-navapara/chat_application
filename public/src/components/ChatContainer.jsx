@@ -64,21 +64,27 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
   return (
     <Container>
       <div className="chat-header">
-        <button className="back-button" onClick={onBack} aria-label="Back">
-          &#8592;
-        </button>
-        <div className="user-details">
-          <div className="avatar">
-            <img
-              src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
-              alt="avatar"
-            />
-          </div>
-          <div className="username">
-            <h3>{currentChat.username}</h3>
+        <div className="header-left">
+          <button className="back-button" onClick={onBack} aria-label="Back">
+            &#8592;
+          </button>
+        </div>
+        <div className="header-center">
+          <div className="user-details">
+            <div className="avatar">
+              <img
+                src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
+                alt="avatar"
+              />
+            </div>
+            <div className="username">
+              <h3>{currentChat.username}</h3>
+            </div>
           </div>
         </div>
-        <Logout />
+        <div className="header-right">
+          <Logout />
+        </div>
       </div>
       <div className="chat-messages">
         {messages.map((message) => (
@@ -95,30 +101,59 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     </Container>
   );
 }
+
 const Container = styled.div`
   display: grid;
-  grid-template-rows: auto 1fr auto; /* works better on all screens */
+  grid-template-rows: auto 1fr auto;
   height: 100vh;
   gap: 0.1rem;
   overflow: hidden;
+  background-color: #131324;
 
   .chat-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    padding: 0 1rem;
-    gap: 1rem;
-    justify-content: space-between;
-    background-color: #1e1e2f; /* optional for better contrast */
+    padding: 0.8rem 1.5rem;
+    background-color: #1e1e2f;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    .header-left, .header-center, .header-right {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .header-left {
+      justify-content: flex-start;
+      min-width: 40px;
+    }
+
+    .header-center {
+      justify-content: center;
+      flex-grow: 1;
+      overflow: hidden;
+    }
+
+    .header-right {
+      justify-content: flex-end;
+      min-width: 40px;
+    }
 
     .back-button {
       display: none;
       background: none;
       border: none;
       color: white;
-      font-size: 2rem;
+      font-size: 1.8rem;
       cursor: pointer;
-      flex-shrink: 0;
-
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+      transition: color 0.3s ease;
+      
       &:hover {
         color: #4f04ff;
       }
@@ -128,42 +163,42 @@ const Container = styled.div`
       display: flex;
       align-items: center;
       gap: 1rem;
-      flex-grow: 1;
-      justify-content: center;
+      max-width: 100%;
       overflow: hidden;
 
       .avatar img {
         height: 3rem;
+        width: 3rem;
         border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #4e0eff;
       }
 
       .username h3 {
         color: white;
         margin: 0;
         font-size: 1.2rem;
+        font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
     }
-
-    > :last-child {
-      flex-shrink: 0;
-    }
   }
 
   .chat-messages {
-    padding: 1rem;
+    padding: 1rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     overflow-y: auto;
+    scroll-behavior: smooth;
 
     &::-webkit-scrollbar {
-      width: 0.2rem;
+      width: 0.4rem;
 
       &-thumb {
-        background-color: #ffffff39;
+        background-color: #4e0eff;
         border-radius: 1rem;
       }
     }
@@ -178,6 +213,7 @@ const Container = styled.div`
         border-radius: 1rem;
         color: #d1d1d1;
         overflow-wrap: break-word;
+        line-height: 1.4;
       }
     }
 
@@ -185,7 +221,8 @@ const Container = styled.div`
       justify-content: flex-end;
 
       .content {
-        background-color: #4f04ff21;
+        background-color: #4f04ff;
+        color: white;
       }
     }
 
@@ -200,17 +237,43 @@ const Container = styled.div`
 
   @media screen and (max-width: 768px) {
     .chat-header {
-      margin-top: 1.5rem;
+      padding: 0.8rem 1rem;
 
       .back-button {
-        display: inline-block;
+        display: block;
+      }
+      
+      .user-details {
+        gap: 0.8rem;
+        
+        .avatar img {
+          height: 2.5rem;
+          width: 2.5rem;
+        }
+        
+        .username h3 {
+          font-size: 1.1rem;
+        }
       }
     }
 
-    > :last-child {
-      margin-bottom: 1rem;
+    .chat-messages {
+      padding: 1rem;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .chat-header {
+      .user-details {
+        .avatar img {
+          height: 2.2rem;
+          width: 2.2rem;
+        }
+        
+        .username h3 {
+          font-size: 1rem;
+        }
+      }
     }
   }
 `;
-
-
