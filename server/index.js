@@ -9,22 +9,9 @@ require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
-// Add these at the end of the file (before module.exports)
-const path = require('path');
-const __dirname1 = path.resolve();
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname1, "build")));
-  
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname1, "build", "index.html"));
-  });
-}
 mongoose
   .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
   })
   .then(() => {
     console.log("DB Connetion Successfull");
@@ -39,7 +26,18 @@ app.get("/ping", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+const path = require('path');
+const __dirname1 = path.resolve();
 
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from build directory
+  app.use(express.static(path.join(__dirname1, "build")));
+  
+  // Handle React routing
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname1, "build", "index.html"));
+  });
+}
 const server = app.listen(process.env.PORT, () =>
   console.log(`Server started on ${process.env.PORT}`)
 );

@@ -114,63 +114,96 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
   background-color: #131324;
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
+  padding: 1rem;
+  box-sizing: border-box;
 
   .loader {
     max-inline-size: 100%;
+    max-width: 150px;
   }
 
   .title-container {
+    text-align: center;
+    padding: 0 1rem;
+    
     h1 {
       color: white;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      margin: 0;
+      line-height: 1.3;
     }
   }
 
   .avatars {
     display: flex;
-    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    max-width: 100%;
+    padding: 0 1rem;
 
     .avatar {
-      border: 0.4rem solid transparent;
-      padding: 0.4rem;
-      border-radius: 5rem;
+      border: 0.3rem solid transparent;
+      padding: 0.3rem;
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: 0.5s ease-in-out;
+      transition: all 0.3s ease-in-out;
+      width: 80px;
+      height: 80px;
 
       img {
-        height: 6rem;
-        transition: 0.5s ease-in-out;
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
+        transition: all 0.3s ease-in-out;
+        border-radius: 50%;
       }
 
       &:hover {
         cursor: pointer;
         transform: scale(1.1);
       }
+
+      @media (max-width: 480px) {
+        width: 70px;
+        height: 70px;
+      }
     }
 
     .selected {
-      border: 0.4rem solid #4e0eff;
+      border: 0.3rem solid #4e0eff;
     }
   }
 
   .submit-btn {
     background-color: #4e0eff;
     color: white;
-    padding: 1rem 2rem;
+    padding: 0.8rem 1.5rem;
     border: none;
     font-weight: bold;
     cursor: pointer;
     border-radius: 0.4rem;
     font-size: 1rem;
     text-transform: uppercase;
+    transition: background-color 0.3s ease;
+    margin-top: 1rem;
+    width: auto;
+    min-width: 200px;
 
     &:hover {
       background-color: #3c0edc;
+    }
+
+    @media (max-width: 480px) {
+      padding: 0.7rem 1.2rem;
+      font-size: 0.9rem;
+      min-width: 180px;
     }
   }
 `;
