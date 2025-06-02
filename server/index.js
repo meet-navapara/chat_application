@@ -14,12 +14,13 @@ const path = require('path');
 const __dirname1 = path.resolve();
 
 // Serve static files from React build
-app.use(express.static(path.join(__dirname1, "/public/build")));
-
-// Handle React routing, return all requests to React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname1, "public", "build", "index.html"));
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname1, "build")));
+  
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname1, "build", "index.html"));
+  });
+}
 
 mongoose
   .connect(process.env.MONGO_URL, {
