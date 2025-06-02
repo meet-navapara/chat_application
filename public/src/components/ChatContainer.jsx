@@ -144,7 +144,6 @@ const Container = styled.div`
   min-height: -webkit-fill-available;
   width: 100vw;
   overflow: hidden;
-  position: fixed;
   top: 0;
   left: 0;
   background-color: #131324;
@@ -298,6 +297,8 @@ const Container = styled.div`
   }
 
   @media screen and (max-width: 768px) {
+  position: fixed;
+
     .chat-header {
       padding: 0.8rem 0.8rem;
       min-height: 55px;
@@ -333,6 +334,8 @@ const Container = styled.div`
   }
 
   @media screen and (max-width: 480px) {
+  position: fixed;
+
     .chat-header {
       padding: 0.7rem 0.6rem;
       min-height: 50px;
