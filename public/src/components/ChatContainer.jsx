@@ -136,9 +136,9 @@ const Container = styled.div`
   height: 100vh;
   height: -webkit-fill-available;
   min-height: -webkit-fill-available;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   background-color: #131324;
