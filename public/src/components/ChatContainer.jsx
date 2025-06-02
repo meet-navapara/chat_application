@@ -73,6 +73,10 @@ export default function ChatContainer({ currentChat, socket, onBack }) {
     arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
   }, [arrivalMessage]);
 
+    // Auto-scroll to bottom
+    useEffect(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
   // Memoized message item component
   const MessageItem = React.memo(({ message }) => (
@@ -136,10 +140,17 @@ const Container = styled.div`
 display: grid;
 grid-template-rows: auto 1fr auto;
 height: 100vh;
+height: -webkit-fill-available;
+min-height: -webkit-fill-available;
 width: 100%;
+overflow: hidden;
+
+top: 0;
+
 background-color: #131324;
 padding-bottom: ${props => props.keyboardHeight}px;
 transition: padding-bottom 0.3s ease;
+
 
   @supports (-webkit-touch-callout: none) {
     height: -webkit-fill-available;
