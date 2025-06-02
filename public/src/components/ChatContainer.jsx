@@ -142,10 +142,8 @@ const Container = styled.div`
   height: 100vh;
   height: -webkit-fill-available;
   min-height: -webkit-fill-available;
-  width: 100vw;
-  overflow: hidden;
-  top: 0;
-  left: 0;
+  width: 100%;
+ 
   background-color: #131324;
   padding-bottom: ${props => props.keyboardHeight}px;
   transition: padding-bottom 0.3s ease;
@@ -298,7 +296,9 @@ const Container = styled.div`
 
   @media screen and (max-width: 768px) {
   position: fixed;
-
+  overflow: hidden;
+  top: 0;
+  left: 0;
     .chat-header {
       padding: 0.8rem 0.8rem;
       min-height: 55px;
@@ -335,7 +335,9 @@ const Container = styled.div`
 
   @media screen and (max-width: 480px) {
   position: fixed;
-
+  overflow: hidden;
+  top: 0;
+  left: 0;
     .chat-header {
       padding: 0.7rem 0.6rem;
       min-height: 50px;
